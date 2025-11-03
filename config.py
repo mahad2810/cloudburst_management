@@ -1,31 +1,45 @@
 """
 Configuration file for Streamlit Dashboard
+Supports both local .env files and Streamlit Cloud secrets
 """
 import os
 from dotenv import load_dotenv
+import streamlit as st
 
-# Load environment variables from .env file
+# Load environment variables from .env file (for local development)
 load_dotenv()
 
-# Database Configuration (Load from .env with fallback defaults)
+# Helper function to get config values from Streamlit secrets or environment variables
+def get_config(key: str, default: str = ''):
+    """Get configuration from Streamlit secrets (if deployed) or environment variables (if local)"""
+    try:
+        # Try Streamlit secrets first (for deployment)
+        if hasattr(st, 'secrets') and key in st.secrets:
+            return st.secrets[key]
+    except:
+        pass
+    # Fallback to environment variables (for local development)
+    return os.getenv(key, default)
+
+# Database Configuration
 DATABASE_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'database': os.getenv('DB_DATABASE', 'cloudburst_management'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', ''),
-    'port': int(os.getenv('DB_PORT', 3306))
+    'host': get_config('DB_HOST', 'localhost'),
+    'database': get_config('DB_DATABASE', 'cloudburst_management'),
+    'user': get_config('DB_USER', 'root'),
+    'password': get_config('DB_PASSWORD', ''),
+    'port': int(get_config('DB_PORT', '3306'))
 }
 
 # Map Configuration
 MAP_CENTER = [20.5937, 78.9629]  # India center
 MAP_ZOOM = 5
 
-# Mapbox Configuration (Load from .env)
-MAPBOX_TOKEN = os.getenv('MAPBOX_TOKEN', '')
+# Mapbox Configuration
+MAPBOX_TOKEN = get_config('MAPBOX_TOKEN', '')
 MAPBOX_STYLE = "mapbox://styles/mapbox/dark-v11"
 
-# OpenAI Configuration (Load from .env)
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+# OpenAI Configuration
+OPENAI_API_KEY = get_config('OPENAI_API_KEY', '')
 OPENAI_MODEL = "gpt-4-turbo-preview"  # or "gpt-3.5-turbo" for faster/cheaper
 OPENAI_TEMPERATURE = 0.3  # Lower = more focused responses
 OPENAI_MAX_TOKENS = 1000
