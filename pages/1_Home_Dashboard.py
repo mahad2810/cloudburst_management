@@ -83,6 +83,151 @@ def get_kpi_metrics(db):
             'total_distributions': 0
         }
 
+def predict_cloudburst_risk(db):
+    """Predict cloudburst risk based on recent rainfall patterns"""
+    try:
+        # Get recent rainfall data (last 7 days)
+        query = """
+            SELECT region, 
+                   AVG(rainfall_mm) as avg_rainfall,
+                   MAX(rainfall_mm) as max_rainfall,
+                   COUNT(*) as data_points
+            FROM rainfall_data
+            WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            GROUP BY region
+            HAVING avg_rainfall > 0
+            ORDER BY avg_rainfall DESC
+        """
+        df = db.fetch_dataframe(query)
+        
+        if df.empty:
+            return pd.DataFrame()
+        
+        # Cloudburst risk prediction logic
+        # High risk: avg > 200mm or max > 300mm
+        # Moderate risk: avg > 150mm or max > 250mm
+        # Low risk: avg > 100mm or max > 200mm
+        
+        def calculate_risk(row):
+            avg = row['avg_rainfall']
+            max_val = row['max_rainfall']
+            
+            if avg > 200 or max_val > 300:
+                return 'High', '🔴', 90
+            elif avg > 150 or max_val > 250:
+                return 'Moderate', '🟠', 65
+            elif avg > 100 or max_val > 200:
+                return 'Low', '🟡', 40
+            else:
+                return 'Minimal', '🟢', 15
+        
+        df[['risk_level', 'indicator', 'risk_score']] = df.apply(
+            lambda row: pd.Series(calculate_risk(row)), axis=1
+        )
+        
+        return df
+        
+    except Exception as e:
+        st.error(f"Error predicting cloudburst risk: {e}")
+        return pd.DataFrame()
+
+def display_cloudburst_predictions(db):
+    """Display cloudburst prediction dashboard"""
+    st.markdown("### 🌩️ Cloudburst Risk Prediction")
+    st.markdown("*Based on 7-day rainfall pattern analysis*")
+    
+    predictions_df = predict_cloudburst_risk(db)
+    
+    if predictions_df.empty:
+        st.info("📊 Insufficient data for predictions. Need at least 7 days of rainfall data.")
+        return
+    
+    # Summary metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    high_risk_count = len(predictions_df[predictions_df['risk_level'] == 'High'])
+    moderate_risk_count = len(predictions_df[predictions_df['risk_level'] == 'Moderate'])
+    low_risk_count = len(predictions_df[predictions_df['risk_level'] == 'Low'])
+    safe_count = len(predictions_df[predictions_df['risk_level'] == 'Minimal'])
+    
+    with col1:
+        st.metric("🔴 High Risk Regions", high_risk_count)
+    with col2:
+        st.metric("🟠 Moderate Risk", moderate_risk_count)
+    with col3:
+        st.metric("🟡 Low Risk", low_risk_count)
+    with col4:
+        st.metric("🟢 Safe Regions", safe_count)
+    
+    # Risk visualization
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Bar chart of risk scores by region
+        fig = px.bar(
+            predictions_df.head(10),
+            x='region',
+            y='risk_score',
+            color='risk_level',
+            color_discrete_map={
+                'High': '#FF4444',
+                'Moderate': '#FFA500',
+                'Low': '#FFD700',
+                'Minimal': '#4CAF50'
+            },
+            title='Top 10 Regions by Cloudburst Risk Score',
+            labels={'risk_score': 'Risk Score (%)', 'region': 'Region'},
+            hover_data=['avg_rainfall', 'max_rainfall']
+        )
+        fig.update_layout(
+            template='plotly_dark',
+            height=350,
+            showlegend=True
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Risk level distribution pie chart
+        risk_dist = predictions_df['risk_level'].value_counts().reset_index()
+        risk_dist.columns = ['Risk Level', 'Count']
+        
+        fig_pie = px.pie(
+            risk_dist,
+            values='Count',
+            names='Risk Level',
+            title='Risk Distribution',
+            color='Risk Level',
+            color_discrete_map={
+                'High': '#FF4444',
+                'Moderate': '#FFA500',
+                'Low': '#FFD700',
+                'Minimal': '#4CAF50'
+            }
+        )
+        fig_pie.update_layout(template='plotly_dark', height=350)
+        st.plotly_chart(fig_pie, use_container_width=True)
+    
+    # Detailed risk table
+    with st.expander("📋 Detailed Risk Assessment"):
+        display_df = predictions_df[['indicator', 'region', 'risk_level', 'risk_score', 'avg_rainfall', 'max_rainfall']].copy()
+        display_df.columns = ['', 'Region', 'Risk Level', 'Risk Score (%)', 'Avg Rainfall (mm)', 'Max Rainfall (mm)']
+        display_df = display_df.sort_values('Risk Score (%)', ascending=False)
+        
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                '': st.column_config.TextColumn('', width='small'),
+                'Risk Score (%)': st.column_config.ProgressColumn(
+                    'Risk Score (%)',
+                    min_value=0,
+                    max_value=100,
+                    format='%d%%'
+                )
+            }
+        )
+
 def plot_rainfall_trends(db):
     """Create rainfall trend chart"""
     try:
@@ -298,6 +443,11 @@ def main():
             value=kpis['total_distributions'],
             delta="All time"
         )
+    
+    st.markdown("---")
+    
+    # Cloudburst Prediction Section
+    display_cloudburst_predictions(db)
     
     st.markdown("---")
     

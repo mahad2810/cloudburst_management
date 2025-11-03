@@ -114,66 +114,93 @@ def initialize_chat_history():
             }
         ]
 
-def process_ai_query(client, user_question, data, data_summary):
-    """Process user query using OpenAI to analyze CSV data"""
+def get_relevant_data_context(user_question, data):
+    """Get relevant data based on the question"""
+    question_lower = user_question.lower()
+    context_data = {}
+    
+    # Determine which datasets are relevant
+    if any(word in question_lower for word in ['rainfall', 'rain', 'precipitation', 'weather', 'mm', 'temperature']):
+        # Get rainfall data sample
+        df = data['rainfall_data'].copy()
+        # Filter by date if mentioned
+        if 'august' in question_lower or 'aug' in question_lower:
+            df['date'] = pd.to_datetime(df['date'])
+            df = df[df['date'].dt.month == 8]
+        if '2025' in question_lower:
+            df['date'] = pd.to_datetime(df['date'])
+            df = df[df['date'].dt.year == 2025]
+        
+        context_data['rainfall_data'] = df.head(50).to_dict('records')
+    
+    if any(word in question_lower for word in ['alert', 'warning', 'severe', 'critical']):
+        df = data['alerts'].copy()
+        if 'severe' in question_lower:
+            df = df[df['severity'] == 'Severe']
+        context_data['alerts'] = df.head(50).to_dict('records')
+    
+    if any(word in question_lower for word in ['resource', 'stock', 'inventory', 'supply']):
+        df = data['resources'].copy()
+        if 'low' in question_lower:
+            df = df[df['quantity_available'] < 1000]
+        context_data['resources'] = df.head(50).to_dict('records')
+    
+    if any(word in question_lower for word in ['region', 'area', 'population', 'location']):
+        context_data['affected_regions'] = data['affected_regions'].head(30).to_dict('records')
+    
+    if any(word in question_lower for word in ['distribution', 'distributed', 'sent', 'delivered']):
+        df = data['distribution_log'].copy()
+        context_data['distribution_log'] = df.head(50).to_dict('records')
+    
+    # If no specific match, include summary from all
+    if not context_data:
+        context_data['rainfall_data'] = data['rainfall_data'].head(20).to_dict('records')
+        context_data['alerts'] = data['alerts'].head(20).to_dict('records')
+    
+    return context_data
+
+def process_ai_query(client, user_question, data):
+    """Process user query using OpenAI to analyze CSV data directly"""
     try:
-        # Create a context about available data
-        context = f"""You are a data analyst assistant for a Cloudburst Management System. You have access to the following CSV datasets:
-
-AVAILABLE DATASETS:
-1. rainfall_data: {data_summary['rainfall_data']['rows']} rows
-   Columns: {', '.join(data_summary['rainfall_data']['columns'])}
-   Sample data: {json.dumps(data_summary['rainfall_data']['sample'][:2], default=str)}
-
-2. affected_regions: {data_summary['affected_regions']['rows']} rows
-   Columns: {', '.join(data_summary['affected_regions']['columns'])}
-   
-3. alerts: {data_summary['alerts']['rows']} rows
-   Columns: {', '.join(data_summary['alerts']['columns'])}
-   
-4. resources: {data_summary['resources']['rows']} rows
-   Columns: {', '.join(data_summary['resources']['columns'])}
-   
-5. distribution_log: {data_summary['distribution_log']['rows']} rows
-   Columns: {', '.join(data_summary['distribution_log']['columns'])}
-
-IMPORTANT INSTRUCTIONS:
-- Analyze the user's question
-- Determine which dataset(s) are needed
-- Provide Python pandas code to answer the question
-- Return ONLY valid Python code that uses the dataframes
-- Use variable names: rainfall_data, affected_regions, alerts, resources, distribution_log
-- For date filtering, use pd.to_datetime() and comparison operators
-- Store the final answer in a variable called 'result'
-- The result should be either a value, a dataframe, or a formatted string
+        # Get relevant data context
+        relevant_data = get_relevant_data_context(user_question, data)
+        
+        # Create context with actual data
+        data_context = f"""You are a data analyst for a Cloudburst Management System. 
 
 USER QUESTION: {user_question}
 
-Return ONLY the Python code, no explanations."""
+AVAILABLE DATA:
+{json.dumps(relevant_data, indent=2, default=str)[:4000]}
 
-        # Call OpenAI
+INSTRUCTIONS:
+- Analyze the provided data carefully
+- Answer the user's question directly and conversationally
+- Provide specific numbers, names, and insights
+- Use markdown formatting for better readability
+- Highlight key findings
+- If data is insufficient, say so
+- Be friendly and helpful
+
+Provide your analysis:"""
+
+        # Call OpenAI for direct analysis
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a Python data analysis expert. Return only executable pandas code."},
-                {"role": "user", "content": context}
+                {"role": "system", "content": "You are a helpful data analyst providing clear insights from CSV data."},
+                {"role": "user", "content": data_context}
             ],
-            temperature=0.3,
-            max_tokens=500
+            temperature=0.7,
+            max_tokens=800
         )
         
-        code = response.choices[0].message.content.strip()
+        analysis = response.choices[0].message.content.strip()
         
-        # Clean up code (remove markdown formatting if present)
-        if code.startswith("```python"):
-            code = code.replace("```python", "").replace("```", "").strip()
-        elif code.startswith("```"):
-            code = code.replace("```", "").strip()
-        
-        return code
+        return analysis
         
     except Exception as e:
-        return None
+        return f"Error: {str(e)}"
 
 def execute_ai_code(code, data):
     """Execute AI-generated code safely"""
@@ -190,12 +217,30 @@ def execute_ai_code(code, data):
             'result': None
         }
         
+        # Add safe helper functions
+        exec_globals['len'] = len
+        exec_globals['str'] = str
+        exec_globals['int'] = int
+        exec_globals['float'] = float
+        exec_globals['max'] = max
+        exec_globals['min'] = min
+        
         # Execute the code
         exec(code, exec_globals)
         
         result = exec_globals.get('result')
+        
+        # Check if result is empty and provide a meaningful message
+        if result is None:
+            return {'success': False, 'error': 'No result generated from code', 'code': code}
+        
+        if isinstance(result, pd.DataFrame) and result.empty:
+            return {'success': False, 'error': 'Query returned no results. Try adjusting your filters or date range.', 'code': code}
+        
         return {'success': True, 'result': result, 'code': code}
         
+    except IndexError as e:
+        return {'success': False, 'error': 'No data found matching your criteria. Try a different date range or location.', 'code': code}
     except Exception as e:
         return {'success': False, 'error': str(e), 'code': code}
 
@@ -205,42 +250,19 @@ def process_query(data, user_input, client=None):
     
     # If OpenAI client is available, use AI processing
     if client:
-        with st.spinner("🤖 Analyzing your question with AI..."):
-            data_summary = get_data_summary(data)
-            code = process_ai_query(client, user_input, data, data_summary)
+        with st.spinner("🤖 Analyzing your data..."):
+            analysis = process_ai_query(client, user_input, data)
             
-            if code:
-                with st.spinner("⚡ Running analysis..."):
-                    execution_result = execute_ai_code(code, data)
-                    
-                    if execution_result['success']:
-                        result = execution_result['result']
-                        
-                        # Format the response based on result type
-                        if isinstance(result, pd.DataFrame):
-                            return {
-                                'type': 'dataframe',
-                                'content': result,
-                                'title': '📊 Query Results',
-                                'code': execution_result['code']
-                            }
-                        elif isinstance(result, (int, float, str)):
-                            return {
-                                'type': 'text',
-                                'content': f"**Answer:** {result}",
-                                'code': execution_result['code']
-                            }
-                        else:
-                            return {
-                                'type': 'text',
-                                'content': f"**Result:** {str(result)}",
-                                'code': execution_result['code']
-                            }
-                    else:
-                        return {
-                            'type': 'text',
-                            'content': f"❌ Error executing analysis: {execution_result['error']}\n\nGenerated code:\n```python\n{execution_result['code']}\n```"
-                        }
+            if analysis and not analysis.startswith("Error:"):
+                return {
+                    'type': 'text',
+                    'content': analysis
+                }
+            else:
+                return {
+                    'type': 'text',
+                    'content': f"❌ {analysis if analysis else 'Unable to process query'}"
+                }
     
     # Fallback to simple queries if AI is not available
     if 'low' in user_input_lower and 'stock' in user_input_lower:
@@ -276,20 +298,10 @@ def display_response(response):
     """Display chatbot response"""
     if response['type'] == 'text':
         st.markdown(response['content'])
-        
-        # Show AI-generated code if available
-        if 'code' in response:
-            with st.expander("🔍 View AI-Generated Code"):
-                st.code(response['code'], language='python')
     
     elif response['type'] == 'dataframe':
         st.markdown(f"**{response['title']}**")
         st.dataframe(response['content'], use_container_width=True, hide_index=True)
-        
-        # Show AI-generated code if available
-        if 'code' in response:
-            with st.expander("🔍 View AI-Generated Code"):
-                st.code(response['code'], language='python')
         
         # Add download button
         csv = response['content'].to_csv(index=False)
@@ -622,26 +634,27 @@ def main():
     # Footer
     st.markdown("---")
     st.info("""
-    🤖 **AI-Powered Chatbot Assistant:** Ask complex questions about your data in natural language!
+    🤖 **AI-Powered Chatbot Assistant:** Simple, fast, and intelligent!
     
-    **Powered by OpenAI GPT-3.5** - The AI analyzes your question, generates Python pandas code, and executes it on your CSV data.
+    **Powered by OpenAI GPT-3.5** - Directly analyzes your CSV data without code execution.
     
     **Example questions you can ask:**
     - 🌧️ "Which place received the highest rainfall in August 2025?"
-    - 📊 "Show me the average rainfall by region for July 2024"
-    - ⚠️ "List all severe alerts that are still active"
-    - 📦 "Which resources have less than 500 units available?"
-    - 🚚 "What was distributed to Shimla in the last month?"
-    - 📈 "Compare rainfall between Shimla and Manali"
+    - 📊 "What's the average rainfall by region?"
+    - ⚠️ "Show me all severe alerts"
+    - 📦 "Which resources are running low on stock?"
+    - 🚚 "What was recently distributed?"
+    - 📈 "Compare rainfall between different regions"
     - 🔍 "Find regions with critical risk level"
+    - 📉 "Analyze the rainfall trends"
     
     **How it works:**
-    1. You ask a question in plain English
-    2. AI generates Python pandas code to answer your question
-    3. Code is executed on your CSV data
-    4. Results are displayed with the generated code (click "View AI-Generated Code")
+    1. You ask a question
+    2. System sends relevant CSV data to AI
+    3. AI analyzes and responds instantly
+    4. Get clear, conversational insights
     
-    **Tip:** You can see the Python code the AI generated by expanding the code section in each response!
+    **Simple & Fast** - No code execution, just direct AI analysis of your data!
     """)
 
 if __name__ == "__main__":

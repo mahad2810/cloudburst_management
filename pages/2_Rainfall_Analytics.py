@@ -13,6 +13,10 @@ from db.mapbox_helper import get_mapbox_visualizer
 from datetime import datetime, timedelta
 import sys
 from pathlib import Path
+import folium
+from folium.plugins import HeatMap
+from streamlit_folium import st_folium
+import numpy as np
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -22,8 +26,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# Coordinates for actual regions in the database
+# Expanded coordinates covering full region boundaries for gradient fill
 REGION_COORDINATES = {
+    # Original regions
     'Shimla': [31.1048, 77.1734],
     'Manali': [32.2396, 77.1887],
     'Dehradun': [30.3165, 78.0322],
@@ -44,6 +49,25 @@ REGION_COORDINATES = {
     'Joshimath': [30.5563, 79.5647],
     'Itanagar': [27.1000, 93.6167]
 }
+
+# Additional interpolation points for gradient coverage across India
+INTERPOLATION_POINTS = [
+    # Himachal Pradesh region expansion
+    [31.5, 76.5], [31.8, 77.0], [32.0, 77.5], [31.3, 77.8], [31.7, 76.8],
+    # Uttarakhand region expansion  
+    [30.0, 78.5], [30.5, 79.0], [29.8, 79.0], [30.2, 78.8], [29.5, 79.8],
+    # Jammu & Kashmir expansion
+    [33.5, 75.0], [34.5, 76.5], [33.8, 74.5], [34.0, 75.5], [33.2, 76.0],
+    # Northeast expansion
+    [26.5, 90.0], [27.0, 91.0], [26.0, 91.5], [27.5, 92.0], [26.8, 92.5],
+    [25.5, 92.0], [24.8, 92.8], [27.3, 93.0], [26.2, 93.5],
+    # Central Himalayas
+    [29.0, 80.0], [28.5, 81.0], [29.5, 80.5], [28.8, 79.5],
+    # Western Ghats expansion
+    [11.0, 76.5], [10.5, 77.5], [11.5, 76.0], [10.2, 77.2], [11.8, 76.8],
+    # Northern plains buffer
+    [28.0, 77.0], [29.0, 78.0], [27.5, 78.5], [28.5, 79.0],
+]
 
 def get_rainfall_data(db, start_date=None, end_date=None, selected_regions=None):
     """Fetch rainfall data with filters"""
@@ -234,92 +258,47 @@ def create_rainfall_heatmap(df, mapbox_viz=None):
         create_mapbox_scatter_map(agg_df)
 
 def create_mapbox_scatter_map(df):
-    """Create scatter plot map with Mapbox style"""
-    import config
+    """Create 2D Folium map centered on India with rainfall markers (no 3D globe)"""
     
-    # Color mapping based on rainfall intensity - separate RGB columns
-    def map_rainfall_to_rgb(rainfall):
+    # Create Folium map centered on India
+    m = folium.Map(
+        location=[23.5, 78.5],  # Center of India
+        zoom_start=5,
+        tiles='CartoDB dark_matter'
+    )
+    
+    # Color mapping based on rainfall intensity
+    def map_rainfall_to_color(rainfall):
         if rainfall > 200:
-            return 255, 0, 0, 200  # Red - Very Heavy
+            return 'darkred'  # Very Heavy
         elif rainfall > 150:
-            return 255, 100, 0, 200  # Orange - Heavy
+            return 'red'  # Heavy
         elif rainfall > 100:
-            return 255, 200, 0, 200  # Yellow-Orange - Moderate-Heavy
+            return 'orange'  # Moderate-Heavy
         elif rainfall > 50:
-            return 100, 200, 100, 200  # Green - Moderate
+            return 'green'  # Moderate
         else:
-            return 0, 150, 255, 200  # Blue - Light
+            return 'lightblue'  # Light
     
-    # Apply color mapping to RGB columns
-    df['r'] = df['avg_rainfall'].apply(lambda x: map_rainfall_to_rgb(x)[0])
-    df['g'] = df['avg_rainfall'].apply(lambda x: map_rainfall_to_rgb(x)[1])
-    df['b'] = df['avg_rainfall'].apply(lambda x: map_rainfall_to_rgb(x)[2])
-    df['a'] = df['avg_rainfall'].apply(lambda x: map_rainfall_to_rgb(x)[3])
+    # Add circle markers for each region
+    for _, row in df.iterrows():
+        color = map_rainfall_to_color(row['avg_rainfall'])
+        radius = min(max(row['avg_rainfall'] / 10, 8), 30)  # Scale radius
+        
+        folium.CircleMarker(
+            location=[row['latitude'], row['longitude']],
+            radius=radius,
+            popup=f"<b>{row['region']}</b><br/>Avg: {row['avg_rainfall']:.1f} mm<br/>Max: {row['max_rainfall']:.1f} mm<br/>Records: {row['record_count']}",
+            tooltip=row['region'],
+            color='white',
+            fill=True,
+            fillColor=color,
+            fillOpacity=0.7,
+            weight=2
+        ).add_to(m)
     
-    # Create scatter layer
-    scatter_layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=df,
-        get_position=["longitude", "latitude"],
-        get_fill_color=["r", "g", "b", "a"],
-        get_radius="avg_rainfall * 800",  # Size based on rainfall
-        radius_scale=1,
-        radius_min_pixels=5,
-        radius_max_pixels=50,
-        pickable=True,
-        opacity=0.8,
-    )
-    
-    # Create text layer for region names
-    text_layer = pdk.Layer(
-        "TextLayer",
-        data=df,
-        get_position=["longitude", "latitude"],
-        get_text="region",
-        get_size=14,
-        get_color=[255, 255, 255, 255],
-        get_angle=0,
-        get_text_anchor='"middle"',
-        get_alignment_baseline='"bottom"',
-        pickable=False,
-    )
-    
-    # View state
-    view_state = pdk.ViewState(
-        latitude=28.0,
-        longitude=80.0,
-        zoom=5,
-        pitch=40,
-        bearing=0,
-    )
-    
-    # Check if Mapbox token is available
-    mapbox_token = config.MAPBOX_TOKEN if hasattr(config, 'MAPBOX_TOKEN') and config.MAPBOX_TOKEN else None
-    
-    # Create deck
-    if mapbox_token:
-        deck = pdk.Deck(
-            layers=[scatter_layer, text_layer],
-            initial_view_state=view_state,
-            map_style="mapbox://styles/mapbox/dark-v11",
-            tooltip={
-                "html": "<b>{region}</b><br/>Avg: {avg_rainfall:.1f} mm<br/>Max: {max_rainfall:.1f} mm<br/>Records: {record_count}",
-                "style": {"backgroundColor": "steelblue", "color": "white"}
-            },
-            api_keys={"mapbox": mapbox_token}
-        )
-    else:
-        # Fallback without Mapbox token
-        deck = pdk.Deck(
-            layers=[scatter_layer, text_layer],
-            initial_view_state=view_state,
-            tooltip={
-                "html": "<b>{region}</b><br/>Avg: {avg_rainfall:.1f} mm<br/>Max: {max_rainfall:.1f} mm<br/>Records: {record_count}",
-                "style": {"backgroundColor": "steelblue", "color": "white"}
-            }
-        )
-    
-    st.pydeck_chart(deck)
+    # Display map
+    st_folium(m, width=1200, height=600)
     
     # Show color legend
     st.markdown("""
@@ -404,6 +383,144 @@ def show_statistics(df):
         
         st.dataframe(stats_df, use_container_width=True)
 
+def plot_cloudburst_risk_heatmap(df):
+    """Display geospatial gradient heatmap for cloudburst risk using Folium with YlOrRd colormap"""
+    st.markdown("#### ⚠️ Cloudburst Risk Assessment Geospatial Heatmap")
+    st.markdown("Interactive risk map using **YlOrRd** colormap (yellow-orange-red for heat intensity)")
+    st.markdown("**Risk Formula:** Rainfall (60%) + Humidity (25%) + Temperature (15%)")
+    
+    # Prepare data with coordinates
+    df_risk = df.copy()
+    df_risk['lat'] = df_risk['region'].map(lambda x: REGION_COORDINATES.get(x, [None, None])[0])
+    df_risk['lon'] = df_risk['region'].map(lambda x: REGION_COORDINATES.get(x, [None, None])[1])
+    df_risk = df_risk.dropna(subset=['lat', 'lon'])
+    
+    # Calculate risk score
+    df_risk['rainfall_score'] = (df_risk['rainfall_mm'] / 400 * 60).clip(0, 60)
+    df_risk['humidity_score'] = (df_risk['humidity'] / 100 * 25).clip(0, 25)
+    df_risk['temp_score'] = ((40 - df_risk['temperature_c']) / 20 * 15).clip(0, 15)
+    df_risk['total_risk_score'] = df_risk['rainfall_score'] + df_risk['humidity_score'] + df_risk['temp_score']
+    
+    # Aggregate by region
+    agg_data = df_risk.groupby(['region', 'lat', 'lon'])['total_risk_score'].mean().reset_index()
+    
+    # Create Folium map centered on India (2D view, no globe)
+    m = folium.Map(
+        location=[23.5, 78.5],  # Center of India
+        zoom_start=5,
+        tiles='CartoDB dark_matter',
+        prefer_canvas=True
+    )
+    
+    # Prepare heatmap data: [lat, lon, intensity]
+    heat_data = [[row['lat'], row['lon'], row['total_risk_score']/100] for _, row in agg_data.iterrows()]
+    
+    # Add interpolation points with averaged risk scores for gradient fill
+    avg_risk = agg_data['total_risk_score'].mean() / 100
+    for point in INTERPOLATION_POINTS:
+        # Add slight variation to interpolation points
+        heat_data.append([point[0], point[1], avg_risk * 0.5])
+    
+    # Add heatmap layer with YlOrRd gradient (yellow-orange-red for heat intensity)
+    # Increased radius and blur for better gradient fill across regions
+    HeatMap(
+        heat_data,
+        min_opacity=0.4,
+        max_opacity=0.9,
+        radius=50,  # Increased for wider coverage
+        blur=35,    # Increased for smoother gradients
+        gradient={
+            '0.0': '#ffffb2',  # Light yellow (low risk)
+            '0.2': '#fed976',  # Yellow
+            '0.4': '#feb24c',  # Light orange
+            '0.6': '#fd8d3c',  # Orange
+            '0.8': '#f03b20',  # Red
+            '1.0': '#bd0026'   # Dark red (critical risk)
+        }
+    ).add_to(m)
+    
+    # Add markers with risk levels
+    for _, row in agg_data.iterrows():
+        score = row['total_risk_score']
+        if score >= 70:
+            color = 'darkred'
+            icon_color = 'red'
+            risk_level = 'CRITICAL'
+        elif score >= 50:
+            color = 'red'
+            icon_color = 'orange'
+            risk_level = 'HIGH'
+        elif score >= 30:
+            color = 'orange'
+            icon_color = 'yellow'
+            risk_level = 'MODERATE'
+        else:
+            color = 'green'
+            icon_color = 'lightgreen'
+            risk_level = 'LOW'
+        
+        folium.CircleMarker(
+            location=[row['lat'], row['lon']],
+            radius=8,
+            popup=f"<b>{row['region']}</b><br>Risk Score: {score:.1f}/100<br>Level: {risk_level}",
+            color='white',
+            fill=True,
+            fillColor=color,
+            fillOpacity=0.8,
+            weight=2
+        ).add_to(m)
+    
+    # Display map
+    st_folium(m, width=1200, height=600)
+    
+    # Show top risk regions
+    st.markdown("##### 🔴 Top 5 High-Risk Regions")
+    top_risk = agg_data.sort_values('total_risk_score', ascending=False).head(5)
+    
+    cols = st.columns(5)
+    for idx, (_, row) in enumerate(top_risk.iterrows()):
+        with cols[idx]:
+            score = row['total_risk_score']
+            if score >= 70:
+                color = "🔴"
+                level = "Critical"
+            elif score >= 50:
+                color = "🟠"
+                level = "High"
+            elif score >= 30:
+                color = "🟡"
+                level = "Moderate"
+            else:
+                color = "🟢"
+                level = "Low"
+            
+            st.metric(
+                label=f"{color} {row['region']}",
+                value=f"{score:.1f}/100",
+                delta=level
+            )
+    
+    # Interpretation guide
+    with st.expander("📖 Risk Score Calculation & Colormap Interpretation"):
+        st.markdown("""
+        **YlOrRd Colormap (Yellow-Orange-Red for Heat Intensity):**
+        - 🟡 **Light Yellow**: Low risk (0-20)
+        - 🟨 **Yellow**: Caution (20-40)
+        - 🟧 **Orange**: Moderate risk (40-60)
+        - 🟥 **Red**: High risk (60-80)
+        - � **Dark Red**: Critical risk (80-100)
+        
+        **Risk Score Components:**
+        - **Rainfall (60%)**: Higher rainfall = higher risk
+        - **Humidity (25%)**: High humidity = saturated atmosphere
+        - **Temperature (15%)**: Lower temp = condensation trigger
+        
+        **Map Features:**
+        - Click markers to see risk levels and exact scores
+        - Heat intensity shows geographic risk concentration
+        - Larger circles indicate higher risk areas
+        """)
+
 def main():
     """Main function for Rainfall Analytics page"""
     st.title("📊 Rainfall Analytics")
@@ -450,16 +567,16 @@ def main():
     with col1:
         start_date = st.date_input(
             "Start Date",
-            value=datetime(2024, 5, 1),  # Full data range from May 2024
-            min_value=datetime(2024, 5, 1),
-            max_value=datetime(2024, 10, 31)
+            value=datetime(2025, 1, 1),  # Full data range from Jan 2025
+            min_value=datetime(2025, 1, 1),
+            max_value=datetime(2025, 11, 4)
         )
     with col2:
         end_date = st.date_input(
             "End Date",
-            value=datetime(2024, 10, 31),  # Full data range to Oct 2024
-            min_value=datetime(2024, 5, 1),
-            max_value=datetime(2024, 10, 31)
+            value=datetime(2025, 11, 4),  # Full data range to Nov 2025
+            min_value=datetime(2025, 1, 1),
+            max_value=datetime(2025, 11, 4)
         )
     
     # Region filter
@@ -515,6 +632,12 @@ def main():
     
     # Calendar heatmap
     plot_rainfall_heatmap_calendar(df)
+    
+    st.markdown("---")
+    
+    # Cloudburst Risk Heatmap
+    st.markdown("### ⚠️ Cloudburst Risk Assessment Heatmap")
+    plot_cloudburst_risk_heatmap(df)
     
     st.markdown("---")
     

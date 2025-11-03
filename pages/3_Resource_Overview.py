@@ -22,8 +22,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# Coordinates for actual resource locations (hill stations)
+# Expanded coordinates covering full region boundaries for gradient fill
 LOCATION_COORDINATES = {
+    # Original regions
     'Shimla': [31.1048, 77.1734],
     'Manali': [32.2396, 77.1887],
     'Dehradun': [30.3165, 78.0322],
@@ -44,6 +45,25 @@ LOCATION_COORDINATES = {
     'Joshimath': [30.5563, 79.5647],
     'Itanagar': [27.1000, 93.6167]
 }
+
+# Additional interpolation points for gradient coverage across India
+INTERPOLATION_POINTS = [
+    # Himachal Pradesh region expansion
+    [31.5, 76.5], [31.8, 77.0], [32.0, 77.5], [31.3, 77.8], [31.7, 76.8],
+    # Uttarakhand region expansion  
+    [30.0, 78.5], [30.5, 79.0], [29.8, 79.0], [30.2, 78.8], [29.5, 79.8],
+    # Jammu & Kashmir expansion
+    [33.5, 75.0], [34.5, 76.5], [33.8, 74.5], [34.0, 75.5], [33.2, 76.0],
+    # Northeast expansion
+    [26.5, 90.0], [27.0, 91.0], [26.0, 91.5], [27.5, 92.0], [26.8, 92.5],
+    [25.5, 92.0], [24.8, 92.8], [27.3, 93.0], [26.2, 93.5],
+    # Central Himalayas
+    [29.0, 80.0], [28.5, 81.0], [29.5, 80.5], [28.8, 79.5],
+    # Western Ghats expansion
+    [11.0, 76.5], [10.5, 77.5], [11.5, 76.0], [10.2, 77.2], [11.8, 76.8],
+    # Northern plains buffer
+    [28.0, 77.0], [29.0, 78.0], [27.5, 78.5], [28.5, 79.0],
+]
 
 def get_all_resources(db):
     """Fetch all resources"""
@@ -185,41 +205,43 @@ def create_resource_map(df, mapbox_viz=None):
         get_alignment_baseline='"bottom"',
     )
     
-    # View state
-    view_state = pdk.ViewState(
-        latitude=28.0,
-        longitude=80.0,
-        zoom=5,
-        pitch=40,
+    # Create 2D Folium map centered on India (no 3D globe)
+    import folium
+    from streamlit_folium import st_folium
+    
+    m = folium.Map(
+        location=[23.5, 78.5],  # Center of India
+        zoom_start=5,
+        tiles='CartoDB dark_matter'
     )
     
-    # Check for Mapbox token
-    import config
-    mapbox_token = config.MAPBOX_TOKEN if hasattr(config, 'MAPBOX_TOKEN') and config.MAPBOX_TOKEN else None
+    # Add markers for each location (use location_agg which has available_pct)
+    for _, row in location_agg.iterrows():
+        # Determine color based on availability
+        if row['available_pct'] > 70:
+            color = 'green'
+        elif row['available_pct'] > 30:
+            color = 'orange'
+        else:
+            color = 'red'
+        
+        # Calculate radius based on quantity
+        radius = min(max(row['total_quantity'] / 100, 8), 30)
+        
+        folium.CircleMarker(
+            location=[row['latitude'], row['longitude']],
+            radius=radius,
+            popup=f"<b>{row['location']}</b><br/>Resources: {row['resource_count']}<br/>Total Qty: {row['total_quantity']}<br/>Available: {row['available_pct']:.0f}%",
+            tooltip=row['location'],
+            color='white',
+            fill=True,
+            fillColor=color,
+            fillOpacity=0.7,
+            weight=2
+        ).add_to(m)
     
-    # Create deck
-    if mapbox_token:
-        deck = pdk.Deck(
-            layers=[scatter_layer, text_layer],
-            initial_view_state=view_state,
-            map_style="mapbox://styles/mapbox/dark-v11",
-            tooltip={
-                "html": "<b>{location}</b><br/>Resources: {resource_count}<br/>Total Qty: {total_quantity}<br/>Available: {available_pct:.0f}%",
-                "style": {"backgroundColor": "steelblue", "color": "white"}
-            },
-            api_keys={"mapbox": mapbox_token}
-        )
-    else:
-        deck = pdk.Deck(
-            layers=[scatter_layer, text_layer],
-            initial_view_state=view_state,
-            tooltip={
-                "html": "<b>{location}</b><br/>Resources: {resource_count}<br/>Total Qty: {total_quantity}<br/>Available: {available_pct:.0f}%",
-                "style": {"backgroundColor": "steelblue", "color": "white"}
-            }
-        )
-    
-    st.pydeck_chart(deck)
+    # Display map
+    st_folium(m, width=1200, height=600)
     
     # Legend
     col1, col2, col3 = st.columns(3)

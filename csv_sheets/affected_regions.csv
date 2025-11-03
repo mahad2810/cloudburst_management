@@ -1,0 +1,20 @@
+region_id,region_name,population,risk_level,warning_status,last_update,report_date
+1,Shimla,229463,High,False,2025-11-03 08:06:27,2025-10-26
+2,Manali,115189,Critical,False,2025-11-04 08:13:21,2025-10-26
+3,Dehradun,173956,Moderate,False,2025-11-03 05:30:55,2025-10-29
+4,Nainital,64695,High,False,2025-11-02 13:42:12,2025-10-30
+5,Leh,149347,Critical,False,2025-11-04 07:51:07,2025-10-31
+6,Gangtok,137015,High,True,2025-11-01 05:17:20,2025-10-26
+7,Darjeeling,147894,Critical,False,2025-11-01 16:25:08,2025-10-22
+8,Munnar,79653,Low,True,2025-11-03 22:08:42,2025-10-21
+9,Kedarnath,185096,Critical,True,2025-11-01 16:18:25,2025-10-22
+10,Kargil,205657,Critical,True,2025-11-03 17:22:46,2025-10-19
+11,Mussoorie,179037,Critical,True,2025-11-03 14:16:21,2025-10-22
+12,Tawang,107913,High,False,2025-11-04 07:39:51,2025-10-30
+13,Cherrapunji,116165,High,False,2025-11-04 06:16:14,2025-10-28
+14,Pithoragarh,122659,Low,True,2025-11-03 17:04:08,2025-10-31
+15,Srinagar,100340,Moderate,True,2025-11-03 14:46:32,2025-10-25
+16,Aizawl,72045,Critical,True,2025-11-01 10:31:08,2025-10-24
+17,Pauri,245810,High,True,2025-11-04 18:47:07,2025-10-21
+18,Joshimath,128386,Critical,True,2025-11-03 03:10:27,2025-10-20
+19,Itanagar,207545,Critical,False,2025-11-02 11:37:54,2025-10-23

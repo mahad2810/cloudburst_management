@@ -1,0 +1,151 @@
+resource_id,resource_type,quantity_available,location,status,last_restocked
+1,First Aid Kits,2662,Tawang,In Transit,2025-11-14
+2,Tents,7511,Dehradun,Available,2025-07-17
+3,Generators,7783,Kedarnath,Used,2025-04-14
+4,Blankets,7758,Kedarnath,Available,2025-11-05
+5,Raincoats,8179,Pithoragarh,Available,2025-04-24
+6,Blankets,2803,Tawang,Available,2025-04-08
+7,Water Bottles,2057,Nainital,Available,2025-05-09
+8,Satellite Phones,8121,Gangtok,Available,2025-11-14
+9,Tents,965,Itanagar,In Transit,2025-11-01
+10,First Aid Kits,1307,Nainital,In Transit,2025-11-28
+11,First Aid Kits,3168,Manali,Used,2025-09-18
+12,Blankets,6206,Itanagar,In Transit,2025-08-03
+13,Generators,6182,Shimla,Used,2025-08-01
+14,Blankets,3026,Gangtok,In Transit,2025-11-11
+15,Satellite Phones,1911,Manali,Available,2025-08-03
+16,Water Bottles,9039,Tawang,Used,2025-08-12
+17,First Aid Kits,5902,Leh,Available,2025-03-02
+18,Water Bottles,3241,Pithoragarh,Used,2025-07-16
+19,Dry Rations,5039,Joshimath,In Transit,2025-07-19
+20,First Aid Kits,9495,Pauri,Available,2025-10-22
+21,Raincoats,6603,Tawang,Available,2025-07-02
+22,Water Bottles,4641,Tawang,In Transit,2025-02-06
+23,Blankets,179,Mussoorie,In Transit,2025-08-08
+24,First Aid Kits,5984,Dehradun,In Transit,2025-04-22
+25,Raincoats,6489,Joshimath,In Transit,2025-05-03
+26,Generators,273,Tawang,Used,2025-06-01
+27,Water Bottles,6794,Munnar,In Transit,2025-10-20
+28,Blankets,3562,Srinagar,Available,2025-10-17
+29,Blankets,7541,Kedarnath,In Transit,2025-10-22
+30,Tents,8090,Mussoorie,Available,2025-11-23
+31,Satellite Phones,6407,Leh,Available,2025-10-28
+32,Dry Rations,1717,Shimla,Available,2025-06-15
+33,Raincoats,9006,Mussoorie,Available,2025-09-23
+34,Dry Rations,9766,Pithoragarh,Used,2025-01-19
+35,Tents,9915,Darjeeling,In Transit,2025-08-26
+36,Tents,9101,Nainital,Available,2025-11-21
+37,Dry Rations,769,Kedarnath,Used,2025-10-13
+38,Raincoats,5248,Leh,Used,2025-08-08
+39,Blankets,4015,Leh,Used,2025-09-07
+40,Tents,5048,Darjeeling,Available,2025-01-04
+41,Dry Rations,4229,Manali,In Transit,2025-03-19
+42,Raincoats,3871,Manali,In Transit,2025-06-06
+43,Satellite Phones,4859,Manali,Used,2025-04-22
+44,Blankets,4102,Manali,Used,2025-02-03
+45,Water Bottles,2913,Kargil,In Transit,2025-06-26
+46,Raincoats,8454,Srinagar,In Transit,2025-02-19
+47,Generators,7237,Pauri,Available,2025-07-24
+48,Satellite Phones,6337,Gangtok,In Transit,2025-07-06
+49,Generators,2206,Aizawl,Available,2025-01-28
+50,Tents,5472,Nainital,Used,2025-08-21
+51,Generators,9195,Joshimath,Used,2025-06-10
+52,Tents,8930,Manali,Used,2025-07-27
+53,Blankets,7841,Cherrapunji,Available,2025-08-12
+54,Satellite Phones,376,Darjeeling,In Transit,2025-08-19
+55,Water Bottles,89,Darjeeling,Available,2025-03-28
+56,Satellite Phones,6376,Kedarnath,In Transit,2025-11-07
+57,Generators,2016,Nainital,Available,2025-09-03
+58,Generators,1535,Kargil,In Transit,2025-10-16
+59,Water Bottles,3782,Gangtok,In Transit,2025-03-24
+60,Water Bottles,7474,Mussoorie,Used,2025-06-27
+61,Raincoats,3139,Leh,Used,2025-10-13
+62,Generators,4169,Kedarnath,Used,2025-05-28
+63,Dry Rations,5805,Darjeeling,Available,2025-07-03
+64,Tents,6492,Shimla,In Transit,2025-01-14
+65,First Aid Kits,1332,Gangtok,Available,2025-10-23
+66,Blankets,8443,Pithoragarh,Used,2025-06-07
+67,Tents,978,Shimla,In Transit,2025-02-01
+68,Generators,6970,Joshimath,Available,2025-11-27
+69,Raincoats,1021,Manali,Used,2025-11-27
+70,First Aid Kits,1599,Srinagar,In Transit,2025-03-09
+71,First Aid Kits,1016,Srinagar,Used,2025-04-19
+72,Water Bottles,6032,Kedarnath,In Transit,2025-09-16
+73,Raincoats,3368,Pauri,Used,2025-05-14
+74,Tents,8182,Dehradun,Available,2025-11-09
+75,Water Bottles,4885,Nainital,Used,2025-04-01
+76,Water Bottles,8495,Kedarnath,In Transit,2025-08-25
+77,Blankets,9702,Joshimath,Used,2025-11-22
+78,Water Bottles,1561,Pauri,In Transit,2025-03-26
+79,Satellite Phones,2054,Srinagar,Used,2025-01-20
+80,Water Bottles,7422,Srinagar,Used,2025-10-25
+81,Satellite Phones,143,Joshimath,In Transit,2025-07-19
+82,Tents,3169,Mussoorie,Used,2025-05-02
+83,Blankets,2722,Srinagar,Available,2025-11-15
+84,Raincoats,203,Manali,In Transit,2025-03-09
+85,Water Bottles,8626,Kargil,Used,2025-02-18
+86,Dry Rations,7535,Nainital,Available,2025-01-02
+87,Water Bottles,5586,Mussoorie,In Transit,2025-02-12
+88,Dry Rations,537,Darjeeling,Available,2025-03-21
+89,Dry Rations,2719,Nainital,Used,2025-04-27
+90,Satellite Phones,6466,Dehradun,Used,2025-08-25
+91,Generators,5695,Leh,In Transit,2025-01-20
+92,Generators,472,Darjeeling,Available,2025-01-07
+93,Raincoats,4619,Pauri,Available,2025-11-09
+94,Dry Rations,791,Pauri,Used,2025-09-08
+95,Satellite Phones,5997,Gangtok,Available,2025-05-09
+96,Tents,5965,Kargil,In Transit,2025-06-15
+97,Water Bottles,1362,Tawang,Available,2025-11-19
+98,First Aid Kits,7268,Tawang,In Transit,2025-09-07
+99,Dry Rations,8342,Joshimath,Available,2025-09-16
+100,Satellite Phones,8299,Aizawl,In Transit,2025-02-02
+101,First Aid Kits,2021,Tawang,In Transit,2025-03-01
+102,Dry Rations,1141,Munnar,Available,2025-03-19
+103,Tents,9272,Tawang,Available,2025-10-26
+104,Blankets,2624,Joshimath,Used,2025-04-13
+105,Blankets,2529,Tawang,Used,2025-07-20
+106,Tents,4592,Darjeeling,Available,2025-05-24
+107,Dry Rations,2904,Dehradun,Available,2025-11-17
+108,Generators,2183,Joshimath,Available,2025-04-26
+109,Blankets,5745,Manali,Used,2025-04-25
+110,Generators,5507,Munnar,In Transit,2025-04-01
+111,Satellite Phones,8217,Munnar,Used,2025-08-23
+112,Satellite Phones,8652,Kedarnath,In Transit,2025-06-12
+113,Tents,4615,Srinagar,Used,2025-07-11
+114,Water Bottles,7744,Munnar,Used,2025-05-20
+115,Satellite Phones,1583,Gangtok,In Transit,2025-10-19
+116,Water Bottles,8184,Tawang,In Transit,2025-08-02
+117,Generators,3197,Pauri,In Transit,2025-07-23
+118,Raincoats,2975,Itanagar,In Transit,2025-08-24
+119,Dry Rations,9930,Kedarnath,In Transit,2025-10-15
+120,Tents,4134,Kargil,In Transit,2025-11-24
+121,First Aid Kits,3652,Tawang,Available,2025-10-12
+122,Tents,4087,Leh,Used,2025-03-13
+123,Blankets,8950,Munnar,Used,2025-08-08
+124,Water Bottles,9002,Srinagar,In Transit,2025-08-26
+125,Satellite Phones,4591,Joshimath,In Transit,2025-10-15
+126,First Aid Kits,4251,Leh,Available,2025-09-27
+127,Tents,8671,Kedarnath,Used,2025-08-26
+128,Water Bottles,1694,Srinagar,Available,2025-05-27
+129,Raincoats,6063,Mussoorie,Used,2025-01-20
+130,First Aid Kits,5590,Munnar,Used,2025-02-26
+131,Tents,9675,Kedarnath,Used,2025-10-15
+132,First Aid Kits,8692,Tawang,In Transit,2025-03-23
+133,Water Bottles,1440,Dehradun,In Transit,2025-11-17
+134,Blankets,4257,Dehradun,Available,2025-04-04
+135,First Aid Kits,9121,Darjeeling,Used,2025-01-20
+136,Tents,4466,Gangtok,Available,2025-03-06
+137,Tents,1982,Manali,Available,2025-01-28
+138,First Aid Kits,3206,Dehradun,Available,2025-07-18
+139,Satellite Phones,1557,Leh,In Transit,2025-01-03
+140,Tents,7762,Srinagar,Used,2025-10-21
+141,Raincoats,8317,Cherrapunji,Available,2025-04-16
+142,Satellite Phones,7587,Itanagar,Available,2025-08-11
+143,First Aid Kits,7513,Aizawl,Available,2025-10-27
+144,Tents,8982,Darjeeling,Used,2025-06-03
+145,Satellite Phones,3595,Srinagar,Available,2025-11-04
+146,Blankets,1055,Mussoorie,Available,2025-08-13
+147,Blankets,3690,Aizawl,Available,2025-09-15
+148,Dry Rations,1384,Dehradun,Used,2025-06-24
+149,Satellite Phones,6655,Itanagar,In Transit,2025-02-21
+150,Satellite Phones,7483,Nainital,Used,2025-08-17

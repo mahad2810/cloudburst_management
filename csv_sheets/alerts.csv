@@ -1,0 +1,201 @@
+alert_id,region,alert_message,severity,date_issued,expiry_date
+1,Joshimath,All clear issued,Warning,2025-07-12,2025-07-15
+2,Mussoorie,Rescue operations ongoing,Severe,2025-04-17,2025-04-24
+3,Cherrapunji,Power outage in affected area,Severe,2025-02-12,2025-02-13
+4,Dehradun,Rescue operations ongoing,Severe,2025-02-14,2025-02-17
+5,Pauri,All clear issued,Severe,2025-07-19,2025-07-21
+6,Darjeeling,Heavy rainfall expected,Info,2025-07-22,2025-07-27
+7,Munnar,"Bridge collapsed, route blocked",Warning,2025-03-28,2025-04-02
+8,Pithoragarh,Power outage in affected area,Severe,2025-01-18,2025-01-19
+9,Pithoragarh,Rescue operations ongoing,Warning,2025-09-09,2025-09-15
+10,Gangtok,Heavy rainfall expected,Severe,2025-04-04,2025-04-08
+11,Gangtok,Rescue operations ongoing,Info,2025-08-23,2025-08-26
+12,Kedarnath,Heavy rainfall expected,Info,2025-01-24,2025-01-31
+13,Darjeeling,Possible flash flood risk,Warning,2025-08-20,2025-08-23
+14,Aizawl,Possible flash flood risk,Warning,2025-04-24,2025-04-25
+15,Gangtok,Landslide risk in hilly regions,Severe,2025-07-09,2025-07-10
+16,Aizawl,Road blockage reported,Severe,2025-02-16,2025-02-19
+17,Mussoorie,Rescue operations ongoing,Severe,2025-04-11,2025-04-13
+18,Dehradun,Possible flash flood risk,Warning,2025-07-17,2025-07-24
+19,Leh,Evacuate low-lying areas,Info,2025-09-28,2025-10-02
+20,Leh,Rescue operations ongoing,Warning,2025-11-23,2025-11-24
+21,Cherrapunji,Possible flash flood risk,Warning,2025-05-13,2025-05-16
+22,Nainital,Heavy rainfall expected,Severe,2025-09-23,2025-09-26
+23,Aizawl,All clear issued,Info,2025-03-06,2025-03-10
+24,Leh,Heavy rainfall expected,Severe,2025-07-08,2025-07-09
+25,Munnar,"Bridge collapsed, route blocked",Warning,2025-10-28,2025-11-03
+26,Kargil,Possible flash flood risk,Severe,2025-10-27,2025-11-01
+27,Pithoragarh,Power outage in affected area,Severe,2025-10-15,2025-10-21
+28,Pauri,Evacuate low-lying areas,Severe,2025-11-05,2025-11-06
+29,Leh,Evacuate low-lying areas,Info,2025-08-05,2025-08-08
+30,Dehradun,Evacuate low-lying areas,Severe,2025-06-19,2025-06-25
+31,Shimla,"Bridge collapsed, route blocked",Warning,2025-11-27,2025-12-03
+32,Dehradun,Heavy rainfall expected,Warning,2025-11-11,2025-11-13
+33,Pauri,Road blockage reported,Info,2025-01-20,2025-01-21
+34,Itanagar,Possible flash flood risk,Warning,2025-11-06,2025-11-08
+35,Mussoorie,"Bridge collapsed, route blocked",Severe,2025-05-14,2025-05-20
+36,Manali,Heavy rainfall expected,Severe,2025-10-02,2025-10-08
+37,Pithoragarh,Power outage in affected area,Severe,2025-03-03,2025-03-10
+38,Dehradun,"Bridge collapsed, route blocked",Severe,2025-04-12,2025-04-16
+39,Itanagar,Heavy rainfall expected,Info,2025-08-03,2025-08-09
+40,Pithoragarh,"Bridge collapsed, route blocked",Severe,2025-01-11,2025-01-15
+41,Aizawl,Rescue operations ongoing,Warning,2025-07-15,2025-07-20
+42,Shimla,Evacuate low-lying areas,Severe,2025-02-27,2025-03-06
+43,Kargil,Road blockage reported,Severe,2025-11-02,2025-11-04
+44,Manali,Heavy rainfall expected,Warning,2025-04-16,2025-04-20
+45,Tawang,Power outage in affected area,Warning,2025-11-10,2025-11-16
+46,Manali,All clear issued,Severe,2025-09-13,2025-09-20
+47,Leh,Power outage in affected area,Severe,2025-04-21,2025-04-25
+48,Mussoorie,"Bridge collapsed, route blocked",Info,2025-06-02,2025-06-03
+49,Nainital,Possible flash flood risk,Warning,2025-02-04,2025-02-10
+50,Pithoragarh,Possible flash flood risk,Info,2025-02-23,2025-03-01
+51,Shimla,Evacuate low-lying areas,Severe,2025-02-26,2025-03-04
+52,Gangtok,Possible flash flood risk,Severe,2025-01-14,2025-01-16
+53,Leh,Heavy rainfall expected,Severe,2025-10-01,2025-10-03
+54,Cherrapunji,Rescue operations ongoing,Warning,2025-08-03,2025-08-05
+55,Kedarnath,All clear issued,Warning,2025-06-19,2025-06-26
+56,Nainital,Power outage in affected area,Info,2025-08-09,2025-08-12
+57,Pauri,Road blockage reported,Info,2025-01-17,2025-01-23
+58,Gangtok,Landslide risk in hilly regions,Severe,2025-03-22,2025-03-29
+59,Manali,Heavy rainfall expected,Info,2025-02-05,2025-02-09
+60,Munnar,All clear issued,Info,2025-07-28,2025-07-30
+61,Dehradun,"Bridge collapsed, route blocked",Severe,2025-06-03,2025-06-08
+62,Manali,Heavy rainfall expected,Warning,2025-08-12,2025-08-18
+63,Cherrapunji,Landslide risk in hilly regions,Info,2025-01-17,2025-01-20
+64,Gangtok,Heavy rainfall expected,Severe,2025-07-22,2025-07-29
+65,Shimla,"Bridge collapsed, route blocked",Severe,2025-11-06,2025-11-13
+66,Pithoragarh,Heavy rainfall expected,Severe,2025-07-26,2025-08-01
+67,Nainital,Evacuate low-lying areas,Warning,2025-04-28,2025-04-29
+68,Darjeeling,Heavy rainfall expected,Severe,2025-08-02,2025-08-04
+69,Manali,Evacuate low-lying areas,Warning,2025-08-11,2025-08-13
+70,Kedarnath,"Bridge collapsed, route blocked",Info,2025-08-04,2025-08-11
+71,Tawang,"Bridge collapsed, route blocked",Severe,2025-04-08,2025-04-15
+72,Itanagar,Road blockage reported,Severe,2025-11-27,2025-11-30
+73,Srinagar,Rescue operations ongoing,Severe,2025-08-25,2025-08-30
+74,Tawang,Landslide risk in hilly regions,Severe,2025-04-17,2025-04-23
+75,Kedarnath,Rescue operations ongoing,Severe,2025-06-21,2025-06-23
+76,Gangtok,All clear issued,Info,2025-03-25,2025-04-01
+77,Nainital,Landslide risk in hilly regions,Info,2025-02-07,2025-02-09
+78,Munnar,Rescue operations ongoing,Warning,2025-06-12,2025-06-16
+79,Tawang,Road blockage reported,Warning,2025-10-12,2025-10-13
+80,Nainital,Heavy rainfall expected,Info,2025-02-17,2025-02-21
+81,Aizawl,Evacuate low-lying areas,Warning,2025-09-14,2025-09-15
+82,Pauri,Rescue operations ongoing,Severe,2025-07-11,2025-07-15
+83,Dehradun,"Bridge collapsed, route blocked",Warning,2025-05-18,2025-05-22
+84,Nainital,Power outage in affected area,Warning,2025-03-20,2025-03-22
+85,Munnar,Road blockage reported,Warning,2025-07-19,2025-07-20
+86,Itanagar,Road blockage reported,Warning,2025-10-20,2025-10-25
+87,Tawang,Possible flash flood risk,Info,2025-06-21,2025-06-26
+88,Dehradun,Rescue operations ongoing,Warning,2025-01-27,2025-01-30
+89,Kedarnath,"Bridge collapsed, route blocked",Info,2025-11-04,2025-11-11
+90,Aizawl,Evacuate low-lying areas,Info,2025-05-04,2025-05-05
+91,Shimla,Evacuate low-lying areas,Info,2025-04-07,2025-04-11
+92,Kedarnath,Heavy rainfall expected,Warning,2025-04-21,2025-04-26
+93,Munnar,Landslide risk in hilly regions,Severe,2025-09-05,2025-09-06
+94,Manali,Heavy rainfall expected,Severe,2025-04-14,2025-04-19
+95,Cherrapunji,Power outage in affected area,Info,2025-11-16,2025-11-20
+96,Manali,Evacuate low-lying areas,Warning,2025-06-18,2025-06-20
+97,Nainital,All clear issued,Severe,2025-10-14,2025-10-15
+98,Kargil,Rescue operations ongoing,Severe,2025-10-26,2025-11-01
+99,Dehradun,Heavy rainfall expected,Severe,2025-05-05,2025-05-12
+100,Mussoorie,Power outage in affected area,Severe,2025-07-25,2025-07-29
+101,Dehradun,Landslide risk in hilly regions,Info,2025-01-27,2025-01-31
+102,Kargil,Heavy rainfall expected,Warning,2025-10-10,2025-10-13
+103,Pithoragarh,Heavy rainfall expected,Warning,2025-09-12,2025-09-18
+104,Gangtok,Rescue operations ongoing,Severe,2025-10-17,2025-10-21
+105,Dehradun,Landslide risk in hilly regions,Info,2025-05-03,2025-05-07
+106,Srinagar,Possible flash flood risk,Severe,2025-06-28,2025-07-02
+107,Munnar,Road blockage reported,Info,2025-04-17,2025-04-24
+108,Dehradun,"Bridge collapsed, route blocked",Warning,2025-11-04,2025-11-07
+109,Munnar,Power outage in affected area,Info,2025-09-07,2025-09-10
+110,Gangtok,All clear issued,Info,2025-11-20,2025-11-27
+111,Aizawl,Evacuate low-lying areas,Warning,2025-08-23,2025-08-30
+112,Tawang,Rescue operations ongoing,Info,2025-08-18,2025-08-23
+113,Kedarnath,Road blockage reported,Info,2025-11-14,2025-11-17
+114,Itanagar,Possible flash flood risk,Info,2025-08-14,2025-08-20
+115,Aizawl,All clear issued,Info,2025-11-19,2025-11-23
+116,Kargil,Road blockage reported,Warning,2025-02-14,2025-02-15
+117,Pithoragarh,Heavy rainfall expected,Severe,2025-04-06,2025-04-07
+118,Pithoragarh,Rescue operations ongoing,Warning,2025-07-06,2025-07-09
+119,Munnar,Possible flash flood risk,Severe,2025-07-01,2025-07-08
+120,Munnar,Rescue operations ongoing,Warning,2025-10-01,2025-10-04
+121,Darjeeling,Evacuate low-lying areas,Info,2025-10-25,2025-10-29
+122,Shimla,Evacuate low-lying areas,Info,2025-09-15,2025-09-17
+123,Pithoragarh,Road blockage reported,Info,2025-04-11,2025-04-17
+124,Kargil,Heavy rainfall expected,Info,2025-01-18,2025-01-19
+125,Darjeeling,Evacuate low-lying areas,Info,2025-01-18,2025-01-25
+126,Munnar,Heavy rainfall expected,Warning,2025-04-11,2025-04-16
+127,Aizawl,Road blockage reported,Warning,2025-08-12,2025-08-19
+128,Gangtok,Possible flash flood risk,Info,2025-01-19,2025-01-22
+129,Pauri,All clear issued,Warning,2025-02-18,2025-02-24
+130,Kargil,Rescue operations ongoing,Info,2025-08-06,2025-08-09
+131,Joshimath,Rescue operations ongoing,Severe,2025-07-12,2025-07-17
+132,Aizawl,Road blockage reported,Severe,2025-01-26,2025-02-02
+133,Dehradun,Heavy rainfall expected,Severe,2025-05-16,2025-05-21
+134,Mussoorie,Possible flash flood risk,Warning,2025-03-11,2025-03-13
+135,Tawang,Landslide risk in hilly regions,Warning,2025-02-24,2025-02-25
+136,Leh,Possible flash flood risk,Severe,2025-03-18,2025-03-22
+137,Pauri,Power outage in affected area,Warning,2025-09-16,2025-09-22
+138,Pithoragarh,Heavy rainfall expected,Warning,2025-06-05,2025-06-08
+139,Srinagar,Possible flash flood risk,Severe,2025-04-19,2025-04-23
+140,Itanagar,Power outage in affected area,Warning,2025-11-19,2025-11-24
+141,Itanagar,"Bridge collapsed, route blocked",Warning,2025-03-01,2025-03-05
+142,Dehradun,Landslide risk in hilly regions,Severe,2025-06-17,2025-06-18
+143,Mussoorie,Possible flash flood risk,Severe,2025-05-01,2025-05-08
+144,Kedarnath,All clear issued,Severe,2025-11-24,2025-11-25
+145,Shimla,Power outage in affected area,Warning,2025-01-18,2025-01-24
+146,Joshimath,Possible flash flood risk,Info,2025-09-24,2025-09-30
+147,Joshimath,Road blockage reported,Severe,2025-09-08,2025-09-14
+148,Manali,Evacuate low-lying areas,Severe,2025-03-17,2025-03-23
+149,Nainital,All clear issued,Info,2025-08-23,2025-08-30
+150,Joshimath,Evacuate low-lying areas,Warning,2025-09-17,2025-09-23
+151,Pauri,Landslide risk in hilly regions,Severe,2025-03-17,2025-03-24
+152,Leh,Landslide risk in hilly regions,Info,2025-01-24,2025-01-27
+153,Darjeeling,Possible flash flood risk,Severe,2025-10-10,2025-10-17
+154,Darjeeling,Rescue operations ongoing,Info,2025-09-25,2025-09-26
+155,Itanagar,Landslide risk in hilly regions,Severe,2025-09-21,2025-09-22
+156,Nainital,"Bridge collapsed, route blocked",Warning,2025-07-17,2025-07-18
+157,Mussoorie,All clear issued,Info,2025-03-15,2025-03-22
+158,Cherrapunji,All clear issued,Info,2025-02-11,2025-02-17
+159,Dehradun,"Bridge collapsed, route blocked",Info,2025-02-12,2025-02-14
+160,Pauri,Possible flash flood risk,Warning,2025-05-05,2025-05-11
+161,Srinagar,All clear issued,Info,2025-11-11,2025-11-18
+162,Munnar,Heavy rainfall expected,Severe,2025-03-25,2025-04-01
+163,Joshimath,All clear issued,Warning,2025-06-25,2025-06-30
+164,Shimla,Heavy rainfall expected,Info,2025-05-19,2025-05-22
+165,Cherrapunji,Power outage in affected area,Severe,2025-03-03,2025-03-06
+166,Gangtok,Road blockage reported,Severe,2025-02-02,2025-02-04
+167,Aizawl,Landslide risk in hilly regions,Severe,2025-10-13,2025-10-20
+168,Cherrapunji,"Bridge collapsed, route blocked",Warning,2025-07-03,2025-07-10
+169,Pauri,"Bridge collapsed, route blocked",Warning,2025-06-24,2025-06-26
+170,Srinagar,Power outage in affected area,Severe,2025-08-26,2025-08-27
+171,Dehradun,Evacuate low-lying areas,Info,2025-06-21,2025-06-25
+172,Cherrapunji,Road blockage reported,Warning,2025-05-23,2025-05-24
+173,Shimla,Possible flash flood risk,Info,2025-09-15,2025-09-19
+174,Munnar,Power outage in affected area,Info,2025-05-09,2025-05-10
+175,Aizawl,Road blockage reported,Warning,2025-02-08,2025-02-09
+176,Pithoragarh,Evacuate low-lying areas,Warning,2025-09-16,2025-09-20
+177,Manali,"Bridge collapsed, route blocked",Info,2025-02-10,2025-02-17
+178,Pauri,Rescue operations ongoing,Info,2025-09-25,2025-09-28
+179,Pauri,"Bridge collapsed, route blocked",Warning,2025-02-28,2025-03-06
+180,Tawang,Landslide risk in hilly regions,Info,2025-09-02,2025-09-08
+181,Aizawl,Road blockage reported,Info,2025-07-24,2025-07-26
+182,Aizawl,Heavy rainfall expected,Severe,2025-10-10,2025-10-15
+183,Itanagar,"Bridge collapsed, route blocked",Warning,2025-04-18,2025-04-23
+184,Leh,Power outage in affected area,Severe,2025-11-18,2025-11-20
+185,Aizawl,Road blockage reported,Info,2025-02-07,2025-02-09
+186,Cherrapunji,"Bridge collapsed, route blocked",Warning,2025-08-08,2025-08-14
+187,Kedarnath,All clear issued,Severe,2025-06-14,2025-06-21
+188,Pauri,"Bridge collapsed, route blocked",Warning,2025-01-24,2025-01-28
+189,Pauri,Landslide risk in hilly regions,Warning,2025-03-21,2025-03-23
+190,Gangtok,Power outage in affected area,Info,2025-01-18,2025-01-21
+191,Shimla,All clear issued,Warning,2025-06-04,2025-06-05
+192,Mussoorie,"Bridge collapsed, route blocked",Warning,2025-04-17,2025-04-20
+193,Gangtok,Rescue operations ongoing,Info,2025-10-02,2025-10-08
+194,Srinagar,"Bridge collapsed, route blocked",Severe,2025-08-10,2025-08-12
+195,Cherrapunji,Power outage in affected area,Warning,2025-06-06,2025-06-07
+196,Pithoragarh,"Bridge collapsed, route blocked",Severe,2025-02-16,2025-02-23
+197,Itanagar,Landslide risk in hilly regions,Severe,2025-01-07,2025-01-08
+198,Pithoragarh,All clear issued,Warning,2025-11-23,2025-11-27
+199,Leh,Rescue operations ongoing,Info,2025-06-23,2025-06-27
+200,Pauri,Landslide risk in hilly regions,Warning,2025-06-19,2025-06-22
