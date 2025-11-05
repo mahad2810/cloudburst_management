@@ -42,8 +42,8 @@ def _get_alert_severity_options(db):
                 return sorted(df_csv['severity'].dropna().astype(str).unique().tolist())
     except Exception:
         pass
-    # Final fallback to common list
-    return ["Critical", "High", "Moderate", "Low"]
+    # Final fallback to common list (matches actual data severity levels)
+    return ["Severe", "Warning", "Info"]
 
 # Expanded coordinates covering full region boundaries for gradient fill
 REGION_COORDINATES = {
@@ -88,15 +88,21 @@ INTERPOLATION_POINTS = [
     [28.0, 77.0], [29.0, 78.0], [27.5, 78.5], [28.5, 79.0],
 ]
 
-def get_alerts(db, active_only=False):
-    """Fetch alerts from database"""
+def get_alerts(db=None, active_only=False):
+    """Fetch alerts from CSV file"""
     try:
-        if active_only:
-            query = QueryHelper.get_active_alerts()
-        else:
-            query = QueryHelper.get_all_alerts()
+        csv_path = Path(__file__).parent.parent / 'csv_sheets' / 'alerts.csv'
+        df = pd.read_csv(csv_path)
         
-        df = db.fetch_dataframe(query)
+        # Convert date columns
+        df['date_issued'] = pd.to_datetime(df['date_issued'])
+        df['expiry_date'] = pd.to_datetime(df['expiry_date'])
+        
+        # Filter active alerts if requested
+        if active_only:
+            today = pd.to_datetime('today').normalize()
+            df = df[df['expiry_date'] >= today]
+        
         return df
     except Exception as e:
         st.error(f"Error fetching alerts: {e}")
@@ -374,7 +380,7 @@ def create_alert_map(df, mapbox_viz=None):
         info_count = len(df_with_coords[df_with_coords['severity'] == 'Info'])
         st.metric("🟡 Info Alerts", info_count)
 
-def add_new_alert(db):
+def add_new_alert(db=None):
     """Form to add new alert"""
     st.markdown("### ➕ Issue New Alert")
     
@@ -383,7 +389,7 @@ def add_new_alert(db):
         
         with col1:
             region = st.text_input("Region *", placeholder="e.g., Mumbai")
-            severity_options = _get_alert_severity_options(db)
+            severity_options = ["Severe", "Warning", "Info"]
             severity = st.selectbox("Severity Level *", severity_options)
             date_issued = st.date_input("Date Issued", value=datetime.now())
         
@@ -408,14 +414,29 @@ def add_new_alert(db):
                 st.error("Expiry date must be after issue date")
             else:
                 try:
-                    query = QueryHelper.insert_alert()
-                    params = (region, alert_message, severity, date_issued, expiry_date)
+                    # Read existing CSV
+                    csv_path = Path(__file__).parent.parent / 'csv_sheets' / 'alerts.csv'
+                    df = pd.read_csv(csv_path)
                     
-                    if db.execute_update(query, params):
-                        st.success(f"✅ Successfully issued {severity} alert for {region}")
-                        st.rerun()
-                    else:
-                        st.error("Failed to issue alert")
+                    # Get next alert_id
+                    next_id = df['alert_id'].max() + 1 if not df.empty else 1
+                    
+                    # Create new alert
+                    new_alert = pd.DataFrame({
+                        'alert_id': [next_id],
+                        'region': [region],
+                        'alert_message': [alert_message],
+                        'severity': [severity],
+                        'date_issued': [date_issued],
+                        'expiry_date': [expiry_date]
+                    })
+                    
+                    # Append and save
+                    df = pd.concat([df, new_alert], ignore_index=True)
+                    df.to_csv(csv_path, index=False)
+                    
+                    st.success(f"✅ Successfully issued {severity} alert for {region}")
+                    st.rerun()
                 except Exception as e:
                     st.error(f"Error issuing alert: {e}")
 
@@ -431,6 +452,9 @@ def show_alerts_table(df, filter_severity=None):
     # Add color indicators
     def severity_badge(severity):
         badges = {
+            'Severe': '🔴',
+            'Warning': '🟠',
+            'Info': '🟡',
             'Critical': '🔴',
             'High': '🟠',
             'Moderate': '🟡',
@@ -446,7 +470,7 @@ def show_alerts_table(df, filter_severity=None):
     
     st.dataframe(display_df, use_container_width=True, hide_index=True)
 
-def delete_alert(db, alerts_df):
+def delete_alert(db=None, alerts_df=None):
     """Delete an alert"""
     st.markdown("### 🗑️ Delete Alert")
     
@@ -469,14 +493,15 @@ def delete_alert(db, alerts_df):
         if submitted:
             try:
                 alert_id = int(selected_alert.split("ID: ")[1].split(",")[0])
-                query = QueryHelper.delete_alert()
-                params = (alert_id,)
                 
-                if db.execute_update(query, params):
-                    st.success(f"✅ Successfully deleted alert ID {alert_id}")
-                    st.rerun()
-                else:
-                    st.error("Failed to delete alert")
+                # Read CSV and delete the alert
+                csv_path = Path(__file__).parent.parent / 'csv_sheets' / 'alerts.csv'
+                df = pd.read_csv(csv_path)
+                df = df[df['alert_id'] != alert_id]
+                df.to_csv(csv_path, index=False)
+                
+                st.success(f"✅ Successfully deleted alert ID {alert_id}")
+                st.rerun()
             except Exception as e:
                 st.error(f"Error deleting alert: {e}")
 
@@ -485,26 +510,9 @@ def main():
     st.title("⚠️ Alert Center")
     st.markdown("### Warning System Management")
     
-    # Check database connection
-    if 'db_connected' not in st.session_state or not st.session_state.db_connected:
-        st.warning("⚠️ Please connect to the database from the main page")
-        st.stop()
-    
-    # Initialize database
-    try:
-        db = init_connection(
-            host=st.session_state.db_config['host'],
-            database=st.session_state.db_config['database'],
-            user=st.session_state.db_config['user'],
-            password=st.session_state.db_config['password']
-        )
-    except Exception as e:
-        st.error(f"Database connection error: {e}")
-        st.stop()
-    
     # Sidebar filters
     st.sidebar.markdown("## 🔍 Filters")
-    show_active_only = st.sidebar.checkbox("Show Active Alerts Only", value=True)
+    show_active_only = st.sidebar.checkbox("Show Active Alerts Only", value=False)
     
     # Refresh button
     if st.sidebar.button("🔄 Refresh Data", use_container_width=True):
@@ -512,8 +520,8 @@ def main():
     
     st.markdown("---")
     
-    # Fetch alerts
-    alerts_df = get_alerts(db, active_only=show_active_only)
+    # Fetch alerts from CSV
+    alerts_df = get_alerts(active_only=show_active_only)
     
     # Summary metrics
     col1, col2, col3, col4 = st.columns(4)
@@ -522,12 +530,12 @@ def main():
         st.metric("Total Alerts", len(alerts_df))
     
     with col2:
-        critical = len(alerts_df[alerts_df['severity'] == 'Critical']) if not alerts_df.empty else 0
-        st.metric("Critical", critical, delta_color="inverse")
+        severe = len(alerts_df[alerts_df['severity'] == 'Severe']) if not alerts_df.empty else 0
+        st.metric("🔴 Severe", severe, delta_color="inverse")
     
     with col3:
-        high = len(alerts_df[alerts_df['severity'] == 'High']) if not alerts_df.empty else 0
-        st.metric("High", high, delta_color="inverse")
+        warning = len(alerts_df[alerts_df['severity'] == 'Warning']) if not alerts_df.empty else 0
+        st.metric("🟠 Warning", warning, delta_color="inverse")
     
     with col4:
         regions = alerts_df['region'].nunique() if not alerts_df.empty else 0
@@ -561,7 +569,7 @@ def main():
         
         # Alerts table with filter
         st.markdown("### 📋 Alert Details")
-        severity_options = _get_alert_severity_options(db)
+        severity_options = ["Severe", "Warning", "Info"]
         severity_filter = st.selectbox(
             "Filter by Severity",
             ["All"] + severity_options
@@ -585,10 +593,10 @@ def main():
     tab1, tab2 = st.tabs(["➕ Add Alert", "🗑️ Delete Alert"])
     
     with tab1:
-        add_new_alert(db)
+        add_new_alert()
     
     with tab2:
-        delete_alert(db, alerts_df)
+        delete_alert(alerts_df=alerts_df)
     
     # Footer
     st.info("💡 **Tip:** Critical and High severity alerts should be monitored closely and communicated to affected regions immediately.")
