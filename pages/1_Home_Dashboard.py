@@ -243,23 +243,47 @@ def plot_rainfall_trends(db):
             st.info("No rainfall data available for the last 30 days")
             return
         
+        # Limit number of regions displayed to avoid clutter
+        top_regions = df.groupby('region')['rainfall_mm'].mean().nlargest(8).index
+        df_filtered = df[df['region'].isin(top_regions)]
+        
         fig = px.line(
-            df, 
+            df_filtered, 
             x='date', 
             y='rainfall_mm', 
             color='region',
-            title='📊 Rainfall Trends (Last 30 Days)',
+            title='📊 Rainfall Trends (Last 30 Days) - Top 8 Regions by Average',
             labels={'rainfall_mm': 'Rainfall (mm)', 'date': 'Date', 'region': 'Region'},
             template='plotly_dark'
         )
         
         fig.update_layout(
-            height=400,
+            height=450,
             hovermode='x unified',
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            legend=dict(
+                orientation="v",
+                yanchor="top",
+                y=1,
+                xanchor="left",
+                x=1.02,
+                bgcolor="rgba(0,0,0,0.5)",
+                bordercolor="rgba(255,255,255,0.3)",
+                borderwidth=1
+            ),
+            margin=dict(r=150, l=50, t=50, b=50),
+            xaxis_title="Date",
+            yaxis_title="Rainfall (mm)"
         )
         
+        fig.update_traces(line=dict(width=2.5), marker=dict(size=4))
+        
         st.plotly_chart(fig, use_container_width=True)
+        
+        # Show info about filtered regions
+        total_regions = df['region'].nunique()
+        if total_regions > 8:
+            st.caption(f"ℹ️ Showing top 8 regions out of {total_regions} total regions with highest average rainfall")
+            
     except Exception as e:
         st.error(f"Error plotting rainfall trends: {e}")
 
