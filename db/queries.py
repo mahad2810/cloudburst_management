@@ -411,3 +411,23 @@ class QueryHelper:
             FROM resources 
             ORDER BY location
         """
+
+    # ==================== GENERIC UTILITY QUERIES ====================
+    
+    @staticmethod
+    def get_distinct_values(table: str, column: str) -> str:
+        """Build a query to get distinct non-null values for a column in a table
+        
+        Args:
+            table: Table name (validated by caller)
+            column: Column name (validated by caller)
+        Returns:
+            SQL string selecting distinct values ordered ascending
+        """
+        # Note: Callers must ensure table/column are trusted identifiers.
+        return f"""
+            SELECT DISTINCT {column} AS value
+            FROM {table}
+            WHERE {column} IS NOT NULL
+            ORDER BY {column}
+        """

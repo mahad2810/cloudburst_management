@@ -21,6 +21,30 @@ st.set_page_config(
     layout="wide"
 )
 
+def _get_alert_severity_options(db):
+    """Fetch distinct alert severity options from DB; fallback to CSV if needed.
+    Returns a sorted list of severities present in data.
+    """
+    try:
+        df = db.fetch_dataframe(QueryHelper.get_distinct_values('alerts', 'severity'))
+        values = sorted([v for v in df['value'].dropna().astype(str).unique().tolist()]) if df is not None and not df.empty else []
+        if values:
+            return values
+    except Exception:
+        pass
+    # Fallback to CSV reference
+    try:
+        csv_path = Path(__file__).parent.parent / 'csv_sheets' / 'alerts.csv'
+        if csv_path.exists():
+            import pandas as pd
+            df_csv = pd.read_csv(csv_path)
+            if 'severity' in df_csv.columns:
+                return sorted(df_csv['severity'].dropna().astype(str).unique().tolist())
+    except Exception:
+        pass
+    # Final fallback to common list
+    return ["Critical", "High", "Moderate", "Low"]
+
 # Expanded coordinates covering full region boundaries for gradient fill
 REGION_COORDINATES = {
     # Original regions
@@ -87,11 +111,15 @@ def plot_severity_distribution(df):
     severity_counts = df['severity'].value_counts().reset_index()
     severity_counts.columns = ['severity', 'count']
     
+    # Support both 4-level and 3-level taxonomies
     colors = {
         'Critical': '#FF1744',
         'High': '#FF6F00',
         'Moderate': '#FDD835',
-        'Low': '#4CAF50'
+        'Low': '#4CAF50',
+        'Severe': '#FF1744',
+        'Warning': '#FF6F00',
+        'Info': '#4CAF50'
     }
     
     fig = px.pie(
@@ -130,7 +158,10 @@ def plot_alert_timeline(df):
             'Critical': '#FF1744',
             'High': '#FF6F00',
             'Moderate': '#FDD835',
-            'Low': '#4CAF50'
+            'Low': '#4CAF50',
+            'Severe': '#FF1744',
+            'Warning': '#FF6F00',
+            'Info': '#4CAF50'
         },
         hover_data=['region', 'alert_message']
     )
@@ -352,7 +383,8 @@ def add_new_alert(db):
         
         with col1:
             region = st.text_input("Region *", placeholder="e.g., Mumbai")
-            severity = st.selectbox("Severity Level *", ["Low", "Moderate", "High", "Critical"])
+            severity_options = _get_alert_severity_options(db)
+            severity = st.selectbox("Severity Level *", severity_options)
             date_issued = st.date_input("Date Issued", value=datetime.now())
         
         with col2:
@@ -529,9 +561,10 @@ def main():
         
         # Alerts table with filter
         st.markdown("### 📋 Alert Details")
+        severity_options = _get_alert_severity_options(db)
         severity_filter = st.selectbox(
             "Filter by Severity",
-            ["All", "Critical", "High", "Moderate", "Low"]
+            ["All"] + severity_options
         )
         show_alerts_table(alerts_df, severity_filter)
         

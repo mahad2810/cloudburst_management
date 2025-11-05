@@ -8,6 +8,7 @@ from db.connection import init_connection
 from datetime import datetime
 import sys
 from pathlib import Path
+import plotly.express as px
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -44,6 +45,31 @@ TABLE_INFO = {
         'pk': 'alert_id'
     }
 }
+
+def _get_distinct_options(db, table: str, column: str, csv_filename: str, fallback: list[str] | None = None):
+    """Fetch distinct non-null values from DB for dropdowns; fallback to CSV or provided list."""
+    try:
+        from db.queries import QueryHelper
+        df = db.fetch_dataframe(QueryHelper.get_distinct_values(table, column))
+        values = sorted([v for v in df['value'].dropna().astype(str).unique().tolist()]) if df is not None and not df.empty else []
+        if values:
+            return values
+    except Exception:
+        pass
+    # CSV fallback
+    try:
+        import pandas as pd
+        from pathlib import Path
+        csv_path = Path(__file__).parent.parent / 'csv_sheets' / csv_filename
+        if csv_path.exists():
+            df_csv = pd.read_csv(csv_path)
+            if column in df_csv.columns:
+                values = sorted(df_csv[column].dropna().astype(str).unique().tolist())
+                if values:
+                    return values
+    except Exception:
+        pass
+    return fallback or []
 
 def get_table_data(db, table_name, limit=None):
     """Fetch data from a table"""
@@ -119,7 +145,8 @@ def add_record(db, table_name):
             with col1:
                 values['region_name'] = st.text_input("Region Name *")
                 values['population'] = st.number_input("Population *", min_value=0)
-                values['risk_level'] = st.selectbox("Risk Level *", ["Low", "Moderate", "High", "Critical"])
+                risk_opts = _get_distinct_options(db, 'affected_regions', 'risk_level', 'affected_regions.csv', ["Low", "Moderate", "High", "Critical"])
+                values['risk_level'] = st.selectbox("Risk Level *", risk_opts)
             with col2:
                 values['warning_status'] = st.checkbox("Warning Status")
                 values['last_update'] = st.date_input("Last Update", value=datetime.now())
@@ -132,14 +159,16 @@ def add_record(db, table_name):
                 values['quantity_available'] = st.number_input("Quantity *", min_value=0)
                 values['location'] = st.text_input("Location *")
             with col2:
-                values['status'] = st.selectbox("Status *", ["Available", "In Use", "Depleted"])
+                status_opts = _get_distinct_options(db, 'resources', 'status', 'resources.csv', ["Available", "Low Stock", "Depleted"])
+                values['status'] = st.selectbox("Status *", status_opts)
                 values['last_restocked'] = st.date_input("Last Restocked", value=datetime.now())
         
         elif table_name == 'alerts':
             col1, col2 = st.columns(2)
             with col1:
                 values['region'] = st.text_input("Region *")
-                values['severity'] = st.selectbox("Severity *", ["Low", "Moderate", "High", "Critical"])
+                severity_opts = _get_distinct_options(db, 'alerts', 'severity', 'alerts.csv', ["Low", "Moderate", "High", "Critical"])
+                values['severity'] = st.selectbox("Severity *", severity_opts)
                 values['date_issued'] = st.date_input("Date Issued", value=datetime.now())
             with col2:
                 values['expiry_date'] = st.date_input("Expiry Date", value=datetime.now() + pd.Timedelta(days=7))
@@ -196,9 +225,95 @@ def main():
     st.title("💾 Database Explorer")
     st.markdown("### Direct Data Access and Management")
     
-    # Check database connection
+    # ============================
+    # Materialized View (CSV) panel
+    # ============================
+    with st.expander("📊 Materialized View (CSV) — mv_region_dashboard", expanded=True):
+        csv_path = Path(__file__).parent.parent / 'csv_sheets' / 'mv_region_dashboard.csv'
+        if not csv_path.exists():
+            st.info(
+                "Materialized view CSV not found at 'csv_sheets/mv_region_dashboard.csv'. "
+                "Generate it via: python -m db.materialized_views --from csv --csv-dir csv_sheets --output-csv csv_sheets/mv_region_dashboard.csv"
+            )
+        else:
+            try:
+                mv_df = pd.read_csv(csv_path)
+                st.caption(f"Loaded {len(mv_df)} rows from {csv_path.name}")
+
+                # Basic filters (guarded by column checks)
+                filt_cols = st.columns(4)
+                if 'region_name' in mv_df.columns:
+                    with filt_cols[0]:
+                        regions = sorted(mv_df['region_name'].dropna().astype(str).unique().tolist())
+                        sel_regions = st.multiselect("Region", regions, default=[])
+                else:
+                    sel_regions = []
+                if 'risk_level' in mv_df.columns:
+                    with filt_cols[1]:
+                        risks = [r for r in ['Low', 'Moderate', 'High', 'Critical'] if r in mv_df['risk_level'].dropna().astype(str).unique().tolist()]
+                        sel_risk = st.multiselect("Risk Level", risks, default=[])
+                else:
+                    sel_risk = []
+                if 'highest_active_severity' in mv_df.columns:
+                    with filt_cols[2]:
+                        sevs = [s for s in ['Low', 'Moderate', 'High', 'Critical'] if s in mv_df['highest_active_severity'].dropna().astype(str).unique().tolist()]
+                        sel_sev = st.multiselect("Max Severity", sevs, default=[])
+                else:
+                    sel_sev = []
+                if 'active_alerts_count' in mv_df.columns:
+                    with filt_cols[3]:
+                        max_alerts = int(mv_df['active_alerts_count'].max()) if not mv_df.empty else 0
+                        sel_alerts = st.slider("Min Active Alerts", 0, max_alerts, 0)
+                else:
+                    sel_alerts = 0
+
+                # Apply filters
+                fdf = mv_df.copy()
+                if sel_regions:
+                    fdf = fdf[fdf['region_name'].astype(str).isin(sel_regions)]
+                if sel_risk:
+                    fdf = fdf[fdf['risk_level'].astype(str).isin(sel_risk)]
+                if sel_sev:
+                    fdf = fdf[fdf['highest_active_severity'].astype(str).isin(sel_sev)]
+                if 'active_alerts_count' in fdf.columns and sel_alerts:
+                    fdf = fdf[fdf['active_alerts_count'] >= sel_alerts]
+
+                st.dataframe(fdf, use_container_width=True, height=350)
+
+                # Quick visuals
+                vc1, vc2 = st.columns(2)
+                if 'region_name' in fdf.columns and 'active_alerts_count' in fdf.columns:
+                    with vc1:
+                        fig = px.bar(
+                            fdf.sort_values('active_alerts_count', ascending=False).head(15),
+                            x='region_name', y='active_alerts_count',
+                            title='Active Alerts by Region', color='active_alerts_count',
+                        )
+                        fig.update_layout(height=350, margin=dict(l=10, r=10, t=40, b=10))
+                        st.plotly_chart(fig, use_container_width=True)
+                if 'region_name' in fdf.columns and 'total_resources_available' in fdf.columns:
+                    with vc2:
+                        fig2 = px.bar(
+                            fdf.sort_values('total_resources_available', ascending=False).head(15),
+                            x='region_name', y='total_resources_available',
+                            title='Resources Available by Region', color='total_resources_available',
+                        )
+                        fig2.update_layout(height=350, margin=dict(l=10, r=10, t=40, b=10))
+                        st.plotly_chart(fig2, use_container_width=True)
+
+                # Download filtered CSV
+                st.download_button(
+                    label="📥 Download Filtered MV CSV",
+                    data=fdf.to_csv(index=False).encode('utf-8'),
+                    file_name=f"mv_region_dashboard_filtered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv"
+                )
+            except Exception as e:
+                st.error(f"Error loading MV CSV: {e}")
+    
+    # Check database connection (Data Explorer below still requires DB)
     if 'db_connected' not in st.session_state or not st.session_state.db_connected:
-        st.warning("⚠️ Please connect to the database from the main page")
+        st.warning("⚠️ Database not connected. The CSV materialized view above is still available.")
         st.stop()
     
     # Initialize database

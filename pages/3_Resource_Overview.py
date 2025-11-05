@@ -22,6 +22,31 @@ st.set_page_config(
     layout="wide"
 )
 
+def _get_resource_status_options(db):
+    """Fetch distinct resource status values from DB; fallback to CSV.
+    Returns sorted list of statuses present in data.
+    """
+    try:
+        df = db.fetch_dataframe(QueryHelper.get_distinct_values('resources', 'status'))
+        values = sorted([v for v in df['value'].dropna().astype(str).unique().tolist()]) if df is not None and not df.empty else []
+        if values:
+            return values
+    except Exception:
+        pass
+    # Fallback to CSV reference
+    try:
+        import pandas as pd
+        from pathlib import Path
+        csv_path = Path(__file__).parent.parent / 'csv_sheets' / 'resources.csv'
+        if csv_path.exists():
+            df_csv = pd.read_csv(csv_path)
+            if 'status' in df_csv.columns:
+                return sorted(df_csv['status'].dropna().astype(str).unique().tolist())
+    except Exception:
+        pass
+    # Final fallback list
+    return ["Available", "Low Stock", "Depleted"]
+
 # Expanded coordinates covering full region boundaries for gradient fill
 LOCATION_COORDINATES = {
     # Original regions
@@ -108,8 +133,11 @@ def plot_resource_status(df):
     
     colors = {
         'Available': '#4CAF50',
-        'In Use': '#FDD835',
-        'Depleted': '#FF1744'
+        'Low Stock': '#FDD835',
+        'Depleted': '#FF1744',
+        # Support CSV variants
+        'In Transit': '#29B6F6',
+        'Used': '#8D6E63'
     }
     
     fig = px.pie(
@@ -295,7 +323,8 @@ def add_new_resource(db):
             location = st.text_input("Location *", placeholder="e.g., Mumbai")
         
         with col2:
-            status = st.selectbox("Status *", ["Available", "In Use", "Depleted"])
+            status_options = _get_resource_status_options(db)
+            status = st.selectbox("Status *", status_options)
             last_restocked = st.date_input("Last Restocked", value=datetime.now())
         
         submitted = st.form_submit_button("💾 Add Resource", use_container_width=True)
@@ -349,7 +378,8 @@ def update_resource_stock(db, resource_df):
             
             with col2:
                 st.info(f"Current Status: **{current_resource['status']}**")
-                new_status = st.selectbox("New Status", ["Available", "In Use", "Depleted"])
+                status_options = _get_resource_status_options(db)
+                new_status = st.selectbox("New Status", status_options)
             
             last_restocked = st.date_input("Restock Date", value=datetime.now())
             
